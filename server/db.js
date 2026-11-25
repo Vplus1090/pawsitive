@@ -285,6 +285,7 @@ export async function initDatabase() {
   await ensureSpeciesCatalog();
   const seededNow = await seedData();
   await ensureRealisticStreetSeed();
+  await ensureRealStreetPhotos();
   if (!seededNow && !process.env.VERCEL) {
     await ensureListingDeedColumns();
     await ensureCoreTeamAccounts();
@@ -583,10 +584,10 @@ async function ensureRealisticStreetSeed() {
   const fallbackSp = sp.Dog || speciesRows[0].species_id;
 
   const streetAnimals = [
-    [sp.Dog || fallbackSp, 'Kaalu', 'https://images.unsplash.com/photo-1561037404-61cd46aa615b?w=800&auto=format&fit=crop', 28.6311, 77.3709, u1],
-    [sp.Cat || fallbackSp, 'Mithu', 'https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=800&auto=format&fit=crop', 28.6264, 77.3762, u2],
-    [sp.Dog || fallbackSp, 'Chhotu', 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&auto=format&fit=crop', 28.6342, 77.3691, u3],
-    [sp.Cow || fallbackSp, 'Nandi', 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?w=800&auto=format&fit=crop', 28.6248, 77.3788, u1]
+    [sp.Dog || fallbackSp, 'Kaalu', 'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/An_Indian_Street_Dog.jpg/960px-An_Indian_Street_Dog.jpg', 28.6311, 77.3709, u1],
+    [sp.Cat || fallbackSp, 'Mithu', 'https://thumb.wikimedia.org/wikipedia/commons/thumb/7/76/Stray_cat_standing_in_the_street.JPG/960px-Stray_cat_standing_in_the_street.JPG', 28.6264, 77.3762, u2],
+    [sp.Dog || fallbackSp, 'Chhotu', 'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Indian_pariah_dog_sleeping.jpg/960px-Indian_pariah_dog_sleeping.jpg', 28.6342, 77.3691, u3],
+    [sp.Cow || fallbackSp, 'Nandi', 'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5c/Cow_in_Varanasi_street_%288527193622%29.jpg/960px-Cow_in_Varanasi_street_%288527193622%29.jpg', 28.6248, 77.3788, u1]
   ];
   await getPool().query(
     'INSERT INTO Animals (species_id, nickname, photo_url, latitude, longitude, first_captured_by) VALUES ?',
@@ -597,29 +598,29 @@ async function ensureRealisticStreetSeed() {
     [
       u1, null, 'feed',
       'Fed Kaalu and two street dogs near Sector 62 tea stall with clean water and curd rice tonight.',
-      'https://images.unsplash.com/photo-1561037404-61cd46aa615b?w=800&auto=format&fit=crop',
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/An_Indian_Street_Dog.jpg/960px-An_Indian_Street_Dog.jpg',
       28.6311, 77.3709, 'resolved',
-      'https://images.unsplash.com/photo-1561037404-61cd46aa615b?w=800&auto=format&fit=crop',
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/An_Indian_Street_Dog.jpg/960px-An_Indian_Street_Dog.jpg',
       u1, 'deed', 100, 1, 0.96, 'AI confirmed Dog & feed deed against original post photo', 100
     ],
     [
       u2, null, 'adoption',
-      'Friendly ginger street cat Mithu hanging around Shipra Mall parking gate. Litter-trained, looking for a safe home!',
-      'https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=800&auto=format&fit=crop',
+      'Friendly street cat Mithu hanging around Shipra Mall parking gate. Looking for a safe home!',
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/7/76/Stray_cat_standing_in_the_street.JPG/960px-Stray_cat_standing_in_the_street.JPG',
       28.6264, 77.3762, 'open', null, null,
       'request', 45, 0, null, null, 0
     ],
     [
       u3, null, 'feed',
-      'Spotted two street dogs resting near Noida Electronic City metro footpath in the afternoon sun.',
-      'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&auto=format&fit=crop',
+      'Spotted an Indian pariah dog resting near Noida Electronic City metro footpath in the afternoon sun.',
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Indian_pariah_dog_sleeping.jpg/960px-Indian_pariah_dog_sleeping.jpg',
       28.6342, 77.3691, 'open', null, null,
       'photo', 25, 0, null, null, 0
     ],
     [
       u1, null, 'rescue',
       'Stray cow Nandi near Fortis crossing has a minor horn scrape. Seeking local gau-raksha vet contact.',
-      'https://images.unsplash.com/photo-1546445317-29f4545e9d53?w=800&auto=format&fit=crop',
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5c/Cow_in_Varanasi_street_%288527193622%29.jpg/960px-Cow_in_Varanasi_street_%288527193622%29.jpg',
       28.6248, 77.3788, 'open', null, null,
       'request', 70, 0, null, null, 0
     ]
@@ -644,6 +645,40 @@ async function ensureRealisticStreetSeed() {
   );
 
   await syncUnifiedPoints();
+}
+
+async function ensureRealStreetPhotos() {
+  const studioCheck = await db.get(
+    "SELECT listing_id FROM Listings WHERE photo_url LIKE '%photo-1561037404%' OR photo_url LIKE '%photo-1546445317%' OR photo_url LIKE '%photo-1573865526739%' LIMIT 1"
+  );
+  if (!studioCheck) return;
+
+  const replacements = [
+    [
+      'https://images.unsplash.com/photo-1561037404-61cd46aa615b?w=800&auto=format&fit=crop',
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/An_Indian_Street_Dog.jpg/960px-An_Indian_Street_Dog.jpg'
+    ],
+    [
+      'https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=800&auto=format&fit=crop',
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/7/76/Stray_cat_standing_in_the_street.JPG/960px-Stray_cat_standing_in_the_street.JPG'
+    ],
+    [
+      'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&auto=format&fit=crop',
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Indian_pariah_dog_sleeping.jpg/960px-Indian_pariah_dog_sleeping.jpg'
+    ],
+    [
+      'https://images.unsplash.com/photo-1546445317-29f4545e9d53?w=800&auto=format&fit=crop',
+      'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5c/Cow_in_Varanasi_street_%288527193622%29.jpg/960px-Cow_in_Varanasi_street_%288527193622%29.jpg'
+    ]
+  ];
+
+  await Promise.all(
+    replacements.flatMap(([oldUrl, newUrl]) => [
+      db.run('UPDATE Listings SET photo_url = ? WHERE photo_url = ?', [newUrl, oldUrl]),
+      db.run('UPDATE Listings SET resolved_photo_url = ? WHERE resolved_photo_url = ?', [newUrl, oldUrl]),
+      db.run('UPDATE Animals SET photo_url = ? WHERE photo_url = ?', [newUrl, oldUrl])
+    ])
+  );
 }
 
 export default db;
