@@ -1,0 +1,61 @@
+{
+  "name": "pawsitive",
+  "version": "1.0.0",
+  "description": "Pawsitive - Gamified Community Animal Welfare & Pokédex Mobile-First Social App (JIIT Sector 62)",
+  "main": "server/index.js",
+  "bin": {
+    "pawsitive": "./bin/cli.js"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -n \"server,client\" -c \"cyan,magenta\" \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "node server/index.js",
+    "dev:client": "vite",
+    "build": "vite build",
+    "start": "node bin/cli.js",
+    "test": "node test/api.test.js"
+  },
+  "keywords": [
+    "pawsitive",
+    "animal-welfare",
+    "pokedex",
+    "social-media",
+    "gamification",
+    "trading-cards",
+    "community",
+    "jiit-noida",
+    "react",
+    "express",
+    "sqlite",
+    "mobile-app"
+  ],
+  "author": "Vardaan Gahlot, Kunal Malik, Ripunjay Saini",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^13.0.3",
+    "canvas-confetti": "^1.9.4",
+    "cors": "^2.8.6",
+    "express": "^5.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^1.16.0",
+    "multer": "^2.5.0",
+    "mysql2": "^3.24.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/canvas-confetti": "^1.9.0",
+    "@types/leaflet": "^1.9.16",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^6.1.2",
+    "autoprefixer": "^10.6.2",
+    "concurrently": "^10.0.6",
+    "postcss": "^8.5.32",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.3.5"
+  }
+}

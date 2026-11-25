@@ -1,0 +1,290 @@
+@import "tailwindcss";
+
+@layer base {
+  html, body {
+    overscroll-behavior-y: contain;
+    overscroll-behavior-x: none;
+    touch-action: manipulation;
+  }
+
+  body {
+    font-family: 'Silkscreen', 'Pixelify Sans', monospace;
+    -webkit-tap-highlight-color: transparent;
+    image-rendering: pixelated;
+  }
+
+  .font-press-start {
+    font-family: 'Press Start 2P', monospace;
+  }
+  .font-silkscreen {
+    font-family: 'Silkscreen', monospace;
+  }
+  .font-pixelify {
+    font-family: 'Pixelify Sans', monospace;
+  }
+}
+
+/* Game Boy Olive-Lime Card & Surface Tokens */
+.gb-card {
+  background: #d7ee96;
+  color: #142211;
+  border: 2px solid #142211;
+  border-radius: 18px;
+}
+
+.gb-card-sm {
+  background: #d7ee96;
+  color: #142211;
+  border: 2px solid #142211;
+  border-radius: 14px;
+}
+
+.gb-panel-dark {
+  background: #1d2f18;
+  color: #ecf7c6;
+  border: 2px solid #7d9b3b;
+  border-radius: 14px;
+}
+
+.gb-pill-track {
+  background: #edf7c8;
+  border: 2px solid #142211;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.gb-btn {
+  background: #edf7c8;
+  color: #142211;
+  border: 2px solid #142211;
+  border-radius: 10px;
+  transition: transform 0.05s ease, background-color 0.1s ease;
+}
+.gb-btn:hover {
+  background: #d7ee96;
+}
+.gb-btn:active {
+  transform: translateY(1px);
+}
+
+.gb-btn-active {
+  background: #7d9b3b;
+  color: #ecf7c6;
+  border: 2px solid #142211;
+  border-radius: 10px;
+  transition: transform 0.06s ease, filter 0.1s ease;
+}
+.gb-btn-active:active {
+  transform: translateY(1px) scale(0.97);
+}
+
+.gb-btn-dark {
+  background: #142211;
+  color: #d7ee96;
+  border: 2px solid #142211;
+  border-radius: 10px;
+  transition: transform 0.06s ease, filter 0.1s ease;
+}
+.gb-btn-dark:active {
+  transform: translateY(1px) scale(0.97);
+}
+
+.gb-card:active, .gb-card-sm:active {
+  transform: scale(0.99);
+}
+
+.gb-card, .gb-card-sm {
+  transition: transform 0.08s ease, filter 0.12s ease;
+}
+
+/* 8-Bit Retro Animations */
+@keyframes gb-sheet-up {
+  0% {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gb-pop-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes gb-backdrop-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes gb-tab-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gb-sprite-idle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes gb-radar-sweep {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(400%); }
+}
+
+.anim-sheet-up {
+  animation: gb-sheet-up 0.19s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.anim-pop-in {
+  animation: gb-pop-in 0.16s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.anim-backdrop-in {
+  animation: gb-backdrop-in 0.15s ease-out both;
+}
+
+.anim-tab-enter {
+  animation: gb-tab-enter 0.16s ease-out both;
+}
+
+.anim-sprite-idle {
+  animation: gb-sprite-idle 1.4s steps(2, end) infinite;
+}
+
+.anim-radar-sweep {
+  animation: gb-radar-sweep 1.1s linear infinite;
+}
+
+.gb-input {
+  background: #edf7c8;
+  color: #142211;
+  border: 2px solid #142211;
+  border-radius: 10px;
+}
+
+.silhouette-8bit {
+  filter: brightness(0%) contrast(200%);
+}
+
+/* True 8-Bit Stepped Pixel Circle */
+.pixel-circle {
+  clip-path: polygon(
+    30% 0%, 70% 0%,
+    70% 8%, 84% 8%,
+    84% 16%, 92% 16%,
+    92% 30%, 100% 30%,
+    100% 70%, 92% 70%,
+    92% 84%, 84% 84%,
+    84% 92%, 70% 92%,
+    70% 100%, 30% 100%,
+    30% 92%, 16% 92%,
+    16% 84%, 8% 84%,
+    8% 70%, 0% 70%,
+    0% 30%, 8% 30%,
+    8% 16%, 16% 16%,
+    16% 8%, 30% 8%
+  );
+}
+
+/* 8-Bit Rounded Pill Shape (3-step pixel corners) */
+.pixel-pill-clip {
+  clip-path: polygon(
+    12px 0%, calc(100% - 12px) 0%,
+    calc(100% - 12px) 3px, calc(100% - 6px) 3px,
+    calc(100% - 6px) 6px, calc(100% - 3px) 6px,
+    calc(100% - 3px) 12px, 100% 12px,
+    100% calc(100% - 12px), calc(100% - 3px) calc(100% - 12px),
+    calc(100% - 3px) calc(100% - 6px), calc(100% - 6px) calc(100% - 6px),
+    calc(100% - 6px) calc(100% - 3px), calc(100% - 12px) calc(100% - 3px),
+    calc(100% - 12px) 100%, 12px 100%,
+    12px calc(100% - 3px), 6px calc(100% - 3px),
+    6px calc(100% - 6px), 3px calc(100% - 6px),
+    3px calc(100% - 12px), 0% calc(100% - 12px),
+    0% 12px, 3px 12px,
+    3px 6px, 6px 6px,
+    6px 3px, 12px 3px
+  );
+}
+
+/* 8-Bit Rounded Tab Button */
+.pixel-tab-clip {
+  clip-path: polygon(
+    8px 0%, calc(100% - 8px) 0%,
+    calc(100% - 8px) 2px, calc(100% - 4px) 2px,
+    calc(100% - 4px) 4px, calc(100% - 2px) 4px,
+    calc(100% - 2px) 8px, 100% 8px,
+    100% calc(100% - 8px), calc(100% - 2px) calc(100% - 8px),
+    calc(100% - 2px) calc(100% - 4px), calc(100% - 4px) calc(100% - 4px),
+    calc(100% - 4px) calc(100% - 2px), calc(100% - 8px) calc(100% - 2px),
+    calc(100% - 8px) 100%, 8px 100%,
+    8px calc(100% - 2px), 4px calc(100% - 2px),
+    4px calc(100% - 4px), 2px calc(100% - 4px),
+    2px calc(100% - 8px), 0% calc(100% - 8px),
+    0% 8px, 2px 8px,
+    2px 4px, 4px 4px,
+    4px 2px, 8px 2px
+  );
+}
+
+.gb-pixel-tab-active {
+  background: #d7ee96;
+  color: #142211;
+  box-shadow: inset 0 -3px 0 0 #9bbc0f;
+}
+
+.gb-pixel-scan-circle {
+  transition: transform 0.05s ease;
+}
+
+.gb-pixel-scan-circle:active {
+  transform: translateY(2px);
+}
+
+/* 16-Bit Fine Stepped Rounded-Top Sheet (SNES / GBA Bevel Look) */
+.sheet-16bit-clip {
+  clip-path: polygon(
+    20px 0%, calc(100% - 20px) 0%,
+    calc(100% - 20px) 2px, calc(100% - 12px) 2px,
+    calc(100% - 12px) 4px, calc(100% - 8px) 4px,
+    calc(100% - 8px) 6px, calc(100% - 6px) 6px,
+    calc(100% - 6px) 8px, calc(100% - 4px) 8px,
+    calc(100% - 4px) 12px, calc(100% - 2px) 12px,
+    calc(100% - 2px) 20px, 100% 20px,
+    100% 100%, 0% 100%,
+    0% 20px, 2px 20px,
+    2px 12px, 4px 12px,
+    4px 8px, 6px 8px,
+    6px 6px, 8px 6px,
+    8px 4px, 12px 4px,
+    12px 2px, 20px 2px
+  );
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
