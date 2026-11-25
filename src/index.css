@@ -147,6 +147,15 @@
   100% { transform: translateY(400%); }
 }
 
+@keyframes gb-boot-fill {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+.anim-boot-fill {
+  animation: gb-boot-fill 1s steps(8, end) both;
+}
+
 .anim-sheet-up {
   animation: gb-sheet-up 0.19s cubic-bezier(0.22, 1, 0.36, 1) both;
 }

@@ -10,6 +10,7 @@ import CreateListingModal from './components/CreateListingModal';
 import ListingDetailModal from './components/ListingDetailModal';
 import AnimalInspectorModal from './components/AnimalInspectorModal';
 import LoginPage from './components/LoginPage';
+import SplashScreen from './components/SplashScreen';
 import { api } from './api';
 import { fx } from './utils/retroFeedback';
 
@@ -17,6 +18,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('feed'); // 'pokedex' | 'feed' | 'leaderboard' | 'profile'
   const [currentUser, setCurrentUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
   const [speciesList, setSpeciesList] = useState([]);
   const [refreshTick, setRefreshTick] = useState(0);
 
@@ -110,6 +112,12 @@ export default function App() {
 
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  // Brief minimal 8-bit startup splash
+  useEffect(() => {
+    const timer = setTimeout(() => setShowSplash(false), 1150);
+    return () => clearTimeout(timer);
   }, []);
 
   // Initialize auth session (no auto-login: unregistered users stay locked on LoginPage)
@@ -280,36 +288,39 @@ export default function App() {
         ) : null
       }
       overlay={
-        currentUser ? (
-          <>
-            <CaptureModal
-              isOpen={isCaptureOpen}
-              onClose={() => popLayerWithHistory(() => setIsCaptureOpen(false))}
-              onCaptured={handleAnimalCaptured}
-              speciesList={speciesList}
-            />
+        <>
+          {showSplash && <SplashScreen onSkip={() => setShowSplash(false)} />}
+          {currentUser && (
+            <>
+              <CaptureModal
+                isOpen={isCaptureOpen}
+                onClose={() => popLayerWithHistory(() => setIsCaptureOpen(false))}
+                onCaptured={handleAnimalCaptured}
+                speciesList={speciesList}
+              />
 
-            <CreateListingModal
-              isOpen={isCreateListingOpen}
-              onClose={() => popLayerWithHistory(() => setIsCreateListingOpen(false))}
-              onCreated={handleListingCreated}
-              speciesList={speciesList}
-            />
+              <CreateListingModal
+                isOpen={isCreateListingOpen}
+                onClose={() => popLayerWithHistory(() => setIsCreateListingOpen(false))}
+                onCreated={handleListingCreated}
+                speciesList={speciesList}
+              />
 
-            <ListingDetailModal
-              listingId={selectedListingId}
-              isOpen={!!selectedListingId}
-              currentUser={currentUser}
-              onClose={() => popLayerWithHistory(() => setSelectedListingId(null))}
-              onUpdated={handleListingUpdated}
-            />
+              <ListingDetailModal
+                listingId={selectedListingId}
+                isOpen={!!selectedListingId}
+                currentUser={currentUser}
+                onClose={() => popLayerWithHistory(() => setSelectedListingId(null))}
+                onUpdated={handleListingUpdated}
+              />
 
-            <AnimalInspectorModal
-              animal={inspectedAnimal}
-              onClose={() => popLayerWithHistory(() => setInspectedAnimal(null))}
-            />
-          </>
-        ) : null
+              <AnimalInspectorModal
+                animal={inspectedAnimal}
+                onClose={() => popLayerWithHistory(() => setInspectedAnimal(null))}
+              />
+            </>
+          )}
+        </>
       }
     >
       {/* Active View inside Phone Screen (Locked to LoginPage when unauthenticated) */}
