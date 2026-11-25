@@ -122,30 +122,4 @@ router.get('/me', authMiddleware, async (req, res) => {
   }
 });
 
-// Demo account switcher to easily test different user roles & deeds
-router.get('/demo-users', async (req, res) => {
-  try {
-    const users = await db.query(
-      'SELECT user_id, name, email, location, points_total, paw_points, avatar_url FROM Users ORDER BY user_id ASC'
-    );
-    return res.json(users);
-  } catch (err) {
-    return res.status(500).json({ error: 'Failed to fetch demo users' });
-  }
-});
-
-router.post('/demo-login/:id', async (req, res) => {
-  try {
-    const user = await db.get(
-      'SELECT user_id, name, email, location, points_total, paw_points, avatar_url FROM Users WHERE user_id = ?',
-      [req.params.id]
-    );
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    const token = signToken(user);
-    return res.json({ user, token });
-  } catch (err) {
-    return res.status(500).json({ error: 'Failed to demo login' });
-  }
-});
-
 export default router;

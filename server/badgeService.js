@@ -7,7 +7,6 @@ export async function recordDeed(userId, actionType, points, listingId = null) {
     [userId, listingId, actionType, points]
   );
 
-  // Update unified points_total & paw_points on user record from Deeds ledger
   await db.run(
     `UPDATE Users
      SET points_total = (
@@ -24,7 +23,6 @@ export async function recordDeed(userId, actionType, points, listingId = null) {
     [userId, userId, userId]
   );
 
-  // Check for newly unlocked badges
   const newlyUnlocked = await checkAndAwardBadges(userId);
 
   const updatedUser = await db.get(
@@ -50,7 +48,6 @@ export async function checkAndAwardBadges(userId) {
 
   const allBadges = await db.query(`SELECT * FROM Badges`);
 
-  // User stats
   const capturesCount = (
     await db.get(`SELECT COUNT(DISTINCT animal_id) as count FROM Captures WHERE user_id = ?`, [userId])
   )?.count || 0;

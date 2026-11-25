@@ -29,9 +29,7 @@ export function isSfxMuted() {
 export function setSfxMuted(muted) {
   try {
     localStorage.setItem(SFX_KEY, muted ? '1' : '0');
-  } catch {
-    // ignore storage limits
-  }
+  } catch {}
 }
 
 export function isHapticMuted() {
@@ -45,9 +43,7 @@ export function isHapticMuted() {
 export function setHapticMuted(muted) {
   try {
     localStorage.setItem(HAPTIC_KEY, muted ? '1' : '0');
-  } catch {
-    // ignore storage limits
-  }
+  } catch {}
 }
 
 function vibrate(pattern) {
@@ -55,9 +51,7 @@ function vibrate(pattern) {
   if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
     try {
       navigator.vibrate(pattern);
-    } catch {
-      // ignore unsupported environments
-    }
+    } catch {}
   }
 }
 

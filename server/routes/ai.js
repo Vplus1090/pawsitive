@@ -43,7 +43,6 @@ export async function classifySpeciesQuery(queryInput = '') {
   let confidence = 0.93;
   let explicitMatch = false;
 
-  // 1. Direct match against any species name
   if (query.trim()) {
     matched = allSpecies.find(s => query.includes(s.name.toLowerCase()));
     if (matched) {
@@ -52,7 +51,6 @@ export async function classifySpeciesQuery(queryInput = '') {
     }
   }
 
-  // 2. Alias match
   if (!matched) {
     for (const rule of KEYWORD_ALIASES) {
       if (rule.terms.some(t => query.includes(t))) {
@@ -66,7 +64,6 @@ export async function classifySpeciesQuery(queryInput = '') {
     }
   }
 
-  // 3. Fallback
   if (!matched) {
     matched = allSpecies[0];
     confidence = 0.88;

@@ -12,7 +12,6 @@ function getHeaders() {
 }
 
 export const api = {
-  // Auth
   getCachedUser() {
     try {
       const raw = localStorage.getItem('pawsitive_user');
@@ -62,27 +61,11 @@ export const api = {
     return data;
   },
 
-  async getDemoUsers() {
-    const res = await fetch(`${API_BASE}/auth/demo-users`);
-    return await res.json();
-  },
-
-  async switchDemoUser(userId) {
-    const res = await fetch(`${API_BASE}/auth/demo-login/${userId}`, {
-      method: 'POST'
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Switch failed');
-    localStorage.setItem('pawsitive_token', data.token);
-    return data;
-  },
-
   logout() {
     localStorage.removeItem('pawsitive_token');
     localStorage.removeItem('pawsitive_user');
   },
 
-  // Listings
   async getListings(helpType = 'all', status = 'all', search = '') {
     const params = new URLSearchParams();
     if (helpType && helpType !== 'all') params.append('help_type', helpType);
@@ -137,16 +120,8 @@ export const api = {
     return data;
   },
 
-  // Captures & Pokedex
   async getPokedex() {
     const res = await fetch(`${API_BASE}/captures/pokedex`, {
-      headers: getHeaders()
-    });
-    return await res.json();
-  },
-
-  async getMyCards() {
-    const res = await fetch(`${API_BASE}/captures/my-cards`, {
       headers: getHeaders()
     });
     return await res.json();
@@ -163,7 +138,6 @@ export const api = {
     return result;
   },
 
-  // Species
   async getSpecies() {
     const res = await fetch(`${API_BASE}/species`, {
       headers: getHeaders()
@@ -171,7 +145,6 @@ export const api = {
     return await res.json();
   },
 
-  // Leaderboard & Deeds
   async getLeaderboard() {
     const res = await fetch(`${API_BASE}/leaderboard`, {
       headers: getHeaders()
@@ -186,7 +159,6 @@ export const api = {
     return await res.json();
   },
 
-  // Badges
   async getBadges() {
     const res = await fetch(`${API_BASE}/badges`, {
       headers: getHeaders()
@@ -194,7 +166,6 @@ export const api = {
     return await res.json();
   },
 
-  // AI Species Classification & Deed Verification
   async classifySpecies(imageHint, filename, url) {
     const res = await fetch(`${API_BASE}/ai/classify-species`, {
       method: 'POST',

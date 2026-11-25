@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Check, Heart, Shield, Drumstick, Volume2, VolumeX, Smartphone, LogIn, LogOut } from 'lucide-react';
+import { Check, Heart, Shield, Drumstick, Volume2, VolumeX, Smartphone, LogOut } from 'lucide-react';
 import { api } from '../api';
 import { fx, isSfxMuted, setSfxMuted, isHapticMuted, setHapticMuted } from '../utils/retroFeedback';
 import { TRAINER_SPRITE_PRESETS } from '../../shared/trainerSprites';
 
 export default function ProfileTab({
   currentUser,
-  onOpenAuth,
   onSignOut
 }) {
   const [profileData, setProfileData] = useState(null);
@@ -42,7 +41,6 @@ export default function ProfileTab({
 
   return (
     <div className="p-3 space-y-3 font-silkscreen">
-      {/* Account Card (Sign In / Create Account / Sign Out) */}
       <div className="gb-card p-3.5 space-y-2.5">
         <div className="flex items-center justify-between text-xs text-[#142211]">
           <span>Account</span>
@@ -51,31 +49,15 @@ export default function ProfileTab({
           )}
         </div>
 
-        {!user ? (
-          <>
-            <p className="text-[11px] font-pixelify text-[#22381c] leading-snug">
-              Sign in or make an account to save your Dex levels, PawPoints, and deeds.
-            </p>
-            <button
-              onClick={() => onOpenAuth && onOpenAuth('login')}
-              className="w-full gb-btn-dark py-2 px-2.5 flex items-center justify-center gap-1.5 text-[10px] cursor-pointer"
-            >
-              <LogIn className="w-3.5 h-3.5" />
-              <span>SIGN IN / MAKE ACCOUNT</span>
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={() => onSignOut && onSignOut()}
-            className="w-full gb-btn-dark py-2 px-2.5 flex items-center justify-center gap-1.5 text-[10px] cursor-pointer"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>SIGN OUT</span>
-          </button>
-        )}
+        <button
+          onClick={() => onSignOut && onSignOut()}
+          className="w-full gb-btn-dark py-2 px-2.5 flex items-center justify-center gap-1.5 text-[10px] cursor-pointer"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          <span>SIGN OUT</span>
+        </button>
       </div>
 
-      {/* Trainer Progress Card with Separate PawPoints */}
       {user && (
       <div className="gb-card p-3.5 space-y-2.5">
         <div className="flex items-center justify-between text-[10px] text-[#142211]">

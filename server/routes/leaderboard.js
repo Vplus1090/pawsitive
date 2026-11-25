@@ -4,7 +4,6 @@ import { authMiddleware } from '../auth.js';
 
 const router = express.Router();
 
-// GET ranked leaderboard
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const leaderboard = await db.query(`
@@ -24,7 +23,6 @@ router.get('/', authMiddleware, async (req, res) => {
       ORDER BY total_points DESC
     `);
 
-    // Attach user top badges
     const enriched = await Promise.all(
       leaderboard.map(async (user, index) => {
         const topBadges = await db.query(
@@ -52,7 +50,6 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
-// GET recent deeds live activity stream
 router.get('/activity', authMiddleware, async (req, res) => {
   try {
     const activity = await db.query(`

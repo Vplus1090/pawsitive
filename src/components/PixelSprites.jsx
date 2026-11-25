@@ -718,21 +718,6 @@ export function PixelAnimalSprite({ species = 'Dog', className = 'w-20 h-20', si
   );
 }
 
-export function PixelQuestionMark({ className = 'w-20 h-20' }) {
-  const rects = useMemo(() => compileGridToRects(SPRITES.question, false), []);
-
-  return (
-    <svg
-      viewBox="0 0 32 28"
-      shapeRendering="crispEdges"
-      className={className}
-      aria-label="Unknown animal"
-    >
-      {rects}
-    </svg>
-  );
-}
-
 export function PixelHabitatBg({ className = '' }) {
   return (
     <svg

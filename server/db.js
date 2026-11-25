@@ -425,19 +425,6 @@ async function seedData() {
     [users]
   );
 
-  // Look up real auto-increment IDs (TiDB Cloud assigns distributed IDs, not always 1,2,3...)
-  const [speciesRows, userRows, badgeRows] = await Promise.all([
-    db.query("SELECT species_id, name FROM Species WHERE name IN ('Dog', 'Cat', 'Cow', 'Bird', 'Monkey')"),
-    db.query('SELECT user_id, email FROM Users ORDER BY user_id ASC'),
-    db.query('SELECT badge_id, name FROM Badges ORDER BY badge_id ASC')
-  ]);
-  const sp = Object.fromEntries(speciesRows.map(r => [r.name, r.species_id]));
-  const us = Object.fromEntries(userRows.map(r => [r.email, r.user_id]));
-  const u1 = us['vardaan@pawsitive.app'] || userRows[0]?.user_id;
-  const u2 = us['kunal@pawsitive.app'] || userRows[1]?.user_id || u1;
-  const u3 = us['ripunjay@pawsitive.app'] || userRows[2]?.user_id || u1;
-  const fallbackSp = sp.Dog || Object.values(sp)[0];
-
   await seedRealStreetContent();
   console.log('✅ Pawsitive MySQL database initialized & seeded successfully.');
   return true;

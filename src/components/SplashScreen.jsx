@@ -11,7 +11,6 @@ export default function SplashScreen({ onSkip }) {
       aria-label="Starting Pawsitive"
     >
       <div className="flex flex-col items-center gap-4 anim-pop-in">
-        {/* 8-Bit Pixel Paw Emblem */}
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 16 16"
@@ -31,7 +30,6 @@ export default function SplashScreen({ onSkip }) {
           PAWSITIVE
         </h1>
 
-        {/* Minimal 8-bit progress bar */}
         <div className="w-36 h-2.5 bg-[#edf7c8] border-2 border-[#142211] p-[1px] overflow-hidden">
           <div className="h-full bg-[#142211] anim-boot-fill" />
         </div>

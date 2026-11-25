@@ -15,21 +15,19 @@ import { api } from './api';
 import { fx } from './utils/retroFeedback';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('feed'); // 'pokedex' | 'feed' | 'leaderboard' | 'profile'
+  const [activeTab, setActiveTab] = useState('feed');
   const [currentUser, setCurrentUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [speciesList, setSpeciesList] = useState([]);
   const [refreshTick, setRefreshTick] = useState(0);
 
-  // Modals & bottom chooser state
   const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
   const [isCaptureOpen, setIsCaptureOpen] = useState(false);
   const [isCreateListingOpen, setIsCreateListingOpen] = useState(false);
   const [selectedListingId, setSelectedListingId] = useState(null);
   const [inspectedAnimal, setInspectedAnimal] = useState(null);
 
-  // Phone back-gesture history stack coordination
   const historyDepthRef = useRef(0);
   const ignoringPopRef = useRef(false);
   const navStateRef = useRef({});
@@ -47,9 +45,7 @@ export default function App() {
     try {
       window.history.pushState({ pawsitiveLayer: layerName }, '');
       historyDepthRef.current += 1;
-    } catch {
-      // ignore sandboxed history restrictions
-    }
+    } catch {}
   };
 
   const popLayerWithHistory = (clearStateFn) => {
@@ -114,13 +110,11 @@ export default function App() {
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
-  // Brief minimal 8-bit startup splash
   useEffect(() => {
     const timer = setTimeout(() => setShowSplash(false), 1150);
     return () => clearTimeout(timer);
   }, []);
 
-  // Initialize auth session (remember logged-in users across reloads/PWA restarts)
   useEffect(() => {
     const initApp = async () => {
       const cached = api.getCachedUser();
@@ -156,9 +150,7 @@ export default function App() {
     try {
       const me = await api.getMe();
       if (me?.user) setCurrentUser(me.user);
-    } catch {
-      // ignore
-    }
+    } catch {}
   };
 
   const handleAuthSuccess = async (user) => {
@@ -168,9 +160,7 @@ export default function App() {
     try {
       const sp = await api.getSpecies();
       if (Array.isArray(sp)) setSpeciesList(sp);
-    } catch {
-      // ignore
-    }
+    } catch {}
   };
 
   const handleSignOut = () => {
@@ -318,7 +308,6 @@ export default function App() {
               <ListingDetailModal
                 listingId={selectedListingId}
                 isOpen={!!selectedListingId}
-                currentUser={currentUser}
                 onClose={() => popLayerWithHistory(() => setSelectedListingId(null))}
                 onUpdated={handleListingUpdated}
               />
@@ -332,7 +321,6 @@ export default function App() {
         </>
       }
     >
-      {/* Active View inside Phone Screen (Locked to LoginPage when unauthenticated) */}
       {!authChecked ? (
         <div className="flex-1 flex items-center justify-center font-silkscreen text-xs text-[#142211]">
           LOADING...

@@ -7,8 +7,6 @@ import { fx, createSwipeDownHandlers } from '../utils/retroFeedback';
 export default function ListingDetailModal({
   listingId,
   isOpen,
-  currentUser,
-  onRequireAuth,
   onClose,
   onUpdated
 }) {
@@ -74,10 +72,6 @@ export default function ListingDetailModal({
 
   const handleAddComment = async (e) => {
     e.preventDefault();
-    if (!currentUser) {
-      if (onRequireAuth) onRequireAuth();
-      return;
-    }
     if (!commentText.trim()) return;
     setIsSubmittingComment(true);
     try {
@@ -226,10 +220,6 @@ export default function ListingDetailModal({
               ) : !isResolving ? (
                 <button
                   onClick={() => {
-                    if (!currentUser) {
-                      if (onRequireAuth) onRequireAuth();
-                      return;
-                    }
                     setIsResolving(true);
                     runAiPreview(proofPhoto, proofHint);
                   }}

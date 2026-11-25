@@ -35,7 +35,6 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Ensure MySQL schema & seed data are ready before handling API requests
 app.use('/api', async (req, res, next) => {
   try {
     await ensureDbReady();
@@ -59,7 +58,6 @@ if (fs.existsSync(uploadsDir)) {
   app.use('/uploads', express.static(uploadsDir));
 }
 
-// API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/listings', listingsRoutes);
 app.use('/api/captures', capturesRoutes);
@@ -69,7 +67,6 @@ app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/badges', badgesRoutes);
 app.use('/api/ai', aiRoutes);
 
-// Health check
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',

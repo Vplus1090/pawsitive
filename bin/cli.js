@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { execSync, fork } from 'child_process';
+import { execSync } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
@@ -10,7 +10,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 
-// Check if frontend build exists; if not, build it automatically
 const distPath = path.join(rootDir, 'dist');
 if (!fs.existsSync(distPath)) {
   console.log('📦 First-time run detected: Building frontend assets with Vite...');
@@ -23,7 +22,6 @@ if (!fs.existsSync(distPath)) {
   }
 }
 
-// Discover network LAN IPs for phone port access
 const networkInterfaces = os.networkInterfaces();
 let lanIp = 'localhost';
 for (const ifaceName of Object.keys(networkInterfaces)) {
@@ -56,6 +54,5 @@ console.log(`
 \x1b[90mPress Ctrl+C to stop the server\x1b[0m
 `);
 
-// Start server
 process.env.PORT = String(PORT);
 import('../server/index.js');
