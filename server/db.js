@@ -45,16 +45,22 @@ function buildPoolOptions() {
     const parsed = new URL(rawUrl);
     const sslMode = parsed.searchParams.get('ssl-mode') || parsed.searchParams.get('sslmode');
     const explicitSsl = parsed.searchParams.get('ssl');
-    parsed.searchParams.delete('ssl-mode');
-    parsed.searchParams.delete('sslmode');
 
-    const needsSsl = Boolean(sslMode || explicitSsl || process.env.MYSQL_SSL === 'true' ||
-      /aivencloud|tidbcloud|psdb\.cloud|azure\.com/i.test(parsed.hostname));
+    const needsSsl = Boolean(
+      sslMode ||
+      explicitSsl ||
+      process.env.MYSQL_SSL === 'true' ||
+      /aivencloud|tidbcloud|psdb\.cloud|azure\.com/i.test(parsed.hostname)
+    );
 
     return {
       ...base,
-      uri: parsed.toString(),
-      ...(needsSsl && !explicitSsl ? { ssl: { rejectUnauthorized: false } } : {})
+      host: parsed.hostname,
+      port: Number(parsed.port || 3306),
+      user: decodeURIComponent(parsed.username),
+      password: decodeURIComponent(parsed.password),
+      database: parsed.pathname.replace(/^\//, '') || 'test',
+      ...(needsSsl ? { ssl: { minVersion: 'TLSv1.2', rejectUnauthorized: false } } : {})
     };
   }
 
