@@ -33,16 +33,41 @@ const MYSQL_CONFIG = {
 
 let pool = null;
 
+function buildPoolOptions() {
+  const base = {
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+  };
+
+  if (process.env.DATABASE_URL) {
+    const rawUrl = process.env.DATABASE_URL.trim();
+    const parsed = new URL(rawUrl);
+    const sslMode = parsed.searchParams.get('ssl-mode') || parsed.searchParams.get('sslmode');
+    const explicitSsl = parsed.searchParams.get('ssl');
+    parsed.searchParams.delete('ssl-mode');
+    parsed.searchParams.delete('sslmode');
+
+    const needsSsl = Boolean(sslMode || explicitSsl || process.env.MYSQL_SSL === 'true' ||
+      /aivencloud|tidbcloud|psdb\.cloud|azure\.com/i.test(parsed.hostname));
+
+    return {
+      ...base,
+      uri: parsed.toString(),
+      ...(needsSsl && !explicitSsl ? { ssl: { rejectUnauthorized: false } } : {})
+    };
+  }
+
+  return {
+    ...base,
+    ...MYSQL_CONFIG,
+    ...(process.env.MYSQL_SSL === 'true' ? { ssl: { rejectUnauthorized: false } } : {})
+  };
+}
+
 function getPool() {
   if (!pool) {
-    pool = process.env.DATABASE_URL
-      ? mysql.createPool(process.env.DATABASE_URL)
-      : mysql.createPool({
-          ...MYSQL_CONFIG,
-          waitForConnections: true,
-          connectionLimit: 10,
-          queueLimit: 0
-        });
+    pool = mysql.createPool(buildPoolOptions());
   }
   return pool;
 }
