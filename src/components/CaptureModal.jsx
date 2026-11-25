@@ -6,10 +6,10 @@ import { getScanPawPoints } from '../../shared/pawPoints';
 import { fx, createSwipeDownHandlers } from '../utils/retroFeedback';
 
 const PRESET_PHOTOS = [
-  { name: 'Dog', url: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600', hint: 'dog' },
-  { name: 'Parrot', url: 'https://images.unsplash.com/photo-1552728089-57bdde30beb3?w=600', hint: 'parrot' },
-  { name: 'Butterfly', url: 'https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?w=600', hint: 'butterfly' },
-  { name: 'Gecko', url: 'https://images.unsplash.com/photo-1504450874802-0ba2bcd9b5ae?w=600', hint: 'gecko' }
+  { name: 'Dog', url: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/01/The_Indian_Pariah_Dog.jpg/960px-The_Indian_Pariah_Dog.jpg', hint: 'dog' },
+  { name: 'Cat', url: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/7/76/Stray_cat_standing_in_the_street.JPG/960px-Stray_cat_standing_in_the_street.JPG', hint: 'cat' },
+  { name: 'Cow', url: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5c/Cow_in_Varanasi_street_%288527193622%29.jpg/960px-Cow_in_Varanasi_street_%288527193622%29.jpg', hint: 'cow' },
+  { name: 'Puppy', url: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Indian_pariah_dog_sleeping.jpg/960px-Indian_pariah_dog_sleeping.jpg', hint: 'dog' }
 ];
 
 export default function CaptureModal({ isOpen, onClose, onCaptured, speciesList = [] }) {

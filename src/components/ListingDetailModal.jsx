@@ -17,7 +17,7 @@ export default function ListingDetailModal({
   const [commentText, setCommentText] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [isResolving, setIsResolving] = useState(false);
-  const [proofPhoto, setProofPhoto] = useState('https://images.unsplash.com/photo-1548767797-d8c844163c4c?w=600');
+  const [proofPhoto, setProofPhoto] = useState('https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/An_Indian_Street_Dog.jpg/960px-An_Indian_Street_Dog.jpg');
   const [proofHint, setProofHint] = useState('');
   const [aiPreview, setAiPreview] = useState(null);
   const [isVerifyingAi, setIsVerifyingAi] = useState(false);

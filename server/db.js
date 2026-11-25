@@ -284,8 +284,7 @@ export async function initDatabase() {
 
   await ensureSpeciesCatalog();
   const seededNow = await seedData();
-  await ensureRealisticStreetSeed();
-  await ensureRealStreetPhotos();
+  await ensureOnlyRealStreetPosts();
   if (!seededNow && !process.env.VERCEL) {
     await ensureListingDeedColumns();
     await ensureCoreTeamAccounts();
@@ -439,140 +438,33 @@ async function seedData() {
   const u3 = us['ripunjay@pawsitive.app'] || userRows[2]?.user_id || u1;
   const fallbackSp = sp.Dog || Object.values(sp)[0];
 
-  const animals = [
-    [sp.Dog || fallbackSp, 'Sheru', 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600', 28.6304, 77.3721, u1],
-    [sp.Cat || fallbackSp, 'Whiskers', 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600', 28.6291, 77.3698, u1],
-    [sp.Cow || fallbackSp, 'Gauri', 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=600', 28.6335, 77.3750, u2],
-    [sp.Dog || fallbackSp, 'Bruno', 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=600', 28.6280, 77.3710, u3],
-    [sp.Bird || fallbackSp, 'Pip', 'https://images.unsplash.com/photo-1552728089-57bdde30beb3?w=600', 28.6318, 77.3734, u3],
-    [sp.Monkey || fallbackSp, 'Cheeku', 'https://images.unsplash.com/photo-1540573133985-87b6da6d54a9?w=600', 28.6350, 77.3680, u2]
-  ];
-  await getPool().query(
-    'INSERT INTO Animals (species_id, nickname, photo_url, latitude, longitude, first_captured_by) VALUES ?',
-    [animals]
-  );
-
-  const animalRows = await db.query('SELECT animal_id, nickname FROM Animals ORDER BY animal_id ASC');
-  const an = Object.fromEntries(animalRows.map(r => [r.nickname, r.animal_id]));
-
-  const captures = [
-    [u1, an.Sheru, 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600', 'Dog', 0.98],
-    [u1, an.Whiskers, 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600', 'Cat', 0.96],
-    [u2, an.Gauri, 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=600', 'Cow', 0.94],
-    [u3, an.Bruno, 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=600', 'Dog', 0.99],
-    [u3, an.Pip, 'https://images.unsplash.com/photo-1552728089-57bdde30beb3?w=600', 'Bird', 0.92],
-    [u2, an.Cheeku, 'https://images.unsplash.com/photo-1540573133985-87b6da6d54a9?w=600', 'Monkey', 0.95]
-  ];
-  await getPool().query(
-    'INSERT INTO Captures (user_id, animal_id, photo_url, predicted_species, confidence) VALUES ?',
-    [captures]
-  );
-
-  const listings = [
-    [
-      u1, an.Sheru, 'feed',
-      'Sheru looks hungry and weak near JIIT Gate 1. Seeking someone to provide fresh food and clean water bowl.',
-      'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600',
-      28.6304, 77.3721, 'open', null, null
-    ],
-    [
-      u2, an.Gauri, 'shelter',
-      'Gauri the cow is stranded in heavy rain near Sector 62 roundabout. Temporary dry tarp shelter needed.',
-      'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=600',
-      28.6335, 77.3750, 'open', null, null
-    ],
-    [
-      u3, an.Bruno, 'vaccine',
-      'Bruno is scheduled for annual anti-rabies drive this weekend. Need volunteer car to coordinate with Noida Authority vet clinic.',
-      'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=600',
-      28.6280, 77.3710, 'open', null, null
-    ],
-    [
-      u3, null, 'clothes',
-      'Three newborn indie puppies shivering in chilly morning breeze near Sector 63 metro station. Warm dog jackets/blankets requested!',
-      'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600',
-      28.6270, 77.3820, 'open', null, null
-    ],
-    [
-      u1, null, 'rescue',
-      'Injured stray cat with limp left paw spotted near Fortis Hospital corner. Needs gentle capture and clinic transport.',
-      'https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=600',
-      28.6189, 77.3725, 'open', null, null
-    ],
-    [
-      u2, an.Whiskers, 'feed',
-      'Whiskers needed kitten milk formula and dry kibble behind the college canteen.',
-      'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600',
-      28.6291, 77.3698, 'resolved',
-      'https://images.unsplash.com/photo-1574158622682-e40e69881006?w=600',
-      u1
-    ]
-  ];
-  await getPool().query(
-    `INSERT INTO Listings (user_id, animal_id, help_type, description, photo_url, latitude, longitude, status, resolved_photo_url, resolved_by)
-     VALUES ?`,
-    [listings]
-  );
-
-  const listingRows = await db.query('SELECT listing_id FROM Listings ORDER BY listing_id ASC');
-  const l = listingRows.map(r => r.listing_id);
-
-  const comments = [
-    [l[0], u2, 'I can bring a bowl of rice and boiled eggs at 2 PM after class!'],
-    [l[0], u1, 'Awesome Kunal! He usually rests under the neem tree near Gate 1.'],
-    [l[0], u3, 'I left a fresh water bowl right next to the security cabin as well.'],
-    [l[1], u3, 'Called the local gaushala team; they dispatched a volunteer van.'],
-    [l[3], u1, 'I have two old sweaters we can turn into cozy puppy blankets.']
-  ];
-  await getPool().query('INSERT INTO Comments (listing_id, user_id, text) VALUES ?', [comments]);
-
-  const deeds = [
-    [u1, l[0], 'create_listing', 50],
-    [u1, null, 'capture_animal', 30],
-    [u1, null, 'capture_animal', 30],
-    [u1, l[5], 'resolve_listing', 100],
-    [u1, l[4], 'create_listing', 50],
-    [u1, l[0], 'post_comment', 10],
-    [u1, l[3], 'post_comment', 10],
-    [u2, l[1], 'create_listing', 50],
-    [u2, l[5], 'create_listing', 50],
-    [u2, null, 'capture_animal', 30],
-    [u2, null, 'capture_animal', 30],
-    [u2, l[0], 'post_comment', 10],
-    [u3, l[2], 'create_listing', 50],
-    [u3, l[3], 'create_listing', 50],
-    [u3, null, 'capture_animal', 30],
-    [u3, null, 'capture_animal', 30],
-    [u3, l[0], 'post_comment', 10],
-    [u3, l[1], 'post_comment', 10]
-  ];
-  await getPool().query(
-    'INSERT INTO Deeds (user_id, listing_id, action_type, points_awarded) VALUES ?',
-    [deeds]
-  );
-
-  const b = badgeRows.map(r => r.badge_id);
-  const userBadges = [
-    [u1, b[0]], [u1, b[1]], [u1, b[3]], [u1, b[4]], [u1, b[6]],
-    [u2, b[0]], [u2, b[3]],
-    [u3, b[0]], [u3, b[3]]
-  ].filter(([, bid]) => Boolean(bid));
-  if (userBadges.length > 0) {
-    await getPool().query('INSERT IGNORE INTO UserBadges (user_id, badge_id) VALUES ?', [userBadges]);
-  }
-
-  await syncUnifiedPoints();
+  await seedRealStreetContent();
   console.log('✅ Pawsitive MySQL database initialized & seeded successfully.');
   return true;
 }
 
-async function ensureRealisticStreetSeed() {
-  const countRow = await db.get('SELECT COUNT(*) as count FROM Listings');
-  if (countRow && countRow.count >= 10) return;
+async function ensureOnlyRealStreetPosts() {
+  const studioRow = await db.get(
+    "SELECT listing_id FROM Listings WHERE photo_url LIKE '%images.unsplash.com%' OR resolved_photo_url LIKE '%images.unsplash.com%' LIMIT 1"
+  );
+  const studioAnimal = await db.get(
+    "SELECT animal_id FROM Animals WHERE photo_url LIKE '%images.unsplash.com%' LIMIT 1"
+  );
+  if (!studioRow && !studioAnimal) return;
 
-  const [speciesRows, userRows] = await Promise.all([
+  await db.run('DELETE FROM Comments');
+  await db.run('DELETE FROM Deeds');
+  await db.run('DELETE FROM Captures');
+  await db.run('DELETE FROM Listings');
+  await db.run('DELETE FROM Animals');
+  await seedRealStreetContent();
+}
+
+async function seedRealStreetContent() {
+  const [speciesRows, userRows, badgeRows] = await Promise.all([
     db.query("SELECT species_id, name FROM Species WHERE name IN ('Dog', 'Cat', 'Cow')"),
-    db.query('SELECT user_id, email FROM Users ORDER BY user_id ASC')
+    db.query('SELECT user_id, email FROM Users ORDER BY user_id ASC'),
+    db.query('SELECT badge_id, name FROM Badges ORDER BY badge_id ASC')
   ]);
   if (userRows.length === 0 || speciesRows.length === 0) return;
 
@@ -583,46 +475,110 @@ async function ensureRealisticStreetSeed() {
   const u3 = us['ripunjay@pawsitive.app'] || userRows[2]?.user_id || u1;
   const fallbackSp = sp.Dog || speciesRows[0].species_id;
 
-  const streetAnimals = [
-    [sp.Dog || fallbackSp, 'Kaalu', 'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/An_Indian_Street_Dog.jpg/960px-An_Indian_Street_Dog.jpg', 28.6311, 77.3709, u1],
-    [sp.Cat || fallbackSp, 'Mithu', 'https://thumb.wikimedia.org/wikipedia/commons/thumb/7/76/Stray_cat_standing_in_the_street.JPG/960px-Stray_cat_standing_in_the_street.JPG', 28.6264, 77.3762, u2],
-    [sp.Dog || fallbackSp, 'Chhotu', 'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Indian_pariah_dog_sleeping.jpg/960px-Indian_pariah_dog_sleeping.jpg', 28.6342, 77.3691, u3],
-    [sp.Cow || fallbackSp, 'Nandi', 'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5c/Cow_in_Varanasi_street_%288527193622%29.jpg/960px-Cow_in_Varanasi_street_%288527193622%29.jpg', 28.6248, 77.3788, u1]
+  const PHOTOS = {
+    kaalu: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/An_Indian_Street_Dog.jpg/960px-An_Indian_Street_Dog.jpg',
+    sheru: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/01/The_Indian_Pariah_Dog.jpg/960px-The_Indian_Pariah_Dog.jpg',
+    chhotu: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Indian_pariah_dog_sleeping.jpg/960px-Indian_pariah_dog_sleeping.jpg',
+    motu: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/92/A_stray_Indian_Pariah_Dog.jpg/960px-A_stray_Indian_Pariah_Dog.jpg',
+    gauri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5c/Cow_in_Varanasi_street_%288527193622%29.jpg/960px-Cow_in_Varanasi_street_%288527193622%29.jpg',
+    herd: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e1/India_-_Delhi_-_009_-_cows_hanging_out_on_the_road_%282129391055%29.jpg/960px-India_-_Delhi_-_009_-_cows_hanging_out_on_the_road_%282129391055%29.jpg',
+    mithu: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/7/76/Stray_cat_standing_in_the_street.JPG/960px-Stray_cat_standing_in_the_street.JPG',
+    kaluwaCat: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/16/A_street_cat.jpg/960px-A_street_cat.jpg'
+  };
+
+  const animals = [
+    [sp.Dog || fallbackSp, 'Kaalu', PHOTOS.kaalu, 28.6311, 77.3709, u1],
+    [sp.Dog || fallbackSp, 'Sheru', PHOTOS.sheru, 28.6304, 77.3721, u1],
+    [sp.Cow || fallbackSp, 'Gauri', PHOTOS.gauri, 28.6248, 77.3788, u2],
+    [sp.Cat || fallbackSp, 'Mithu', PHOTOS.mithu, 28.6264, 77.3762, u2],
+    [sp.Cat || fallbackSp, 'Whiskers', PHOTOS.kaluwaCat, 28.6291, 77.3698, u2],
+    [sp.Dog || fallbackSp, 'Chhotu', PHOTOS.chhotu, 28.6342, 77.3691, u3],
+    [sp.Cow || fallbackSp, 'Nandi', PHOTOS.herd, 28.6335, 77.3750, u3],
+    [sp.Dog || fallbackSp, 'Motu', PHOTOS.motu, 28.6280, 77.3710, u3]
   ];
   await getPool().query(
     'INSERT INTO Animals (species_id, nickname, photo_url, latitude, longitude, first_captured_by) VALUES ?',
-    [streetAnimals]
+    [animals]
   );
 
-  const streetListings = [
+  const animalRows = await db.query('SELECT animal_id, nickname FROM Animals ORDER BY animal_id ASC');
+  const an = Object.fromEntries(animalRows.map(r => [r.nickname, r.animal_id]));
+
+  // Register every street animal into the corresponding user's Pokédex
+  const captures = [
+    [u1, an.Kaalu, PHOTOS.kaalu, 'Dog', 0.98],
+    [u1, an.Sheru, PHOTOS.sheru, 'Dog', 0.97],
+    [u1, an.Gauri, PHOTOS.gauri, 'Cow', 0.95],
+    [u2, an.Gauri, PHOTOS.gauri, 'Cow', 0.96],
+    [u2, an.Mithu, PHOTOS.mithu, 'Cat', 0.96],
+    [u2, an.Whiskers, PHOTOS.kaluwaCat, 'Cat', 0.95],
+    [u3, an.Chhotu, PHOTOS.chhotu, 'Dog', 0.97],
+    [u3, an.Nandi, PHOTOS.herd, 'Cow', 0.94],
+    [u3, an.Motu, PHOTOS.motu, 'Dog', 0.96]
+  ];
+  await getPool().query(
+    'INSERT INTO Captures (user_id, animal_id, photo_url, predicted_species, confidence) VALUES ?',
+    [captures]
+  );
+
+  const listings = [
     [
-      u1, null, 'feed',
-      'Fed Kaalu and two street dogs near Sector 62 tea stall with clean water and curd rice tonight.',
-      'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/An_Indian_Street_Dog.jpg/960px-An_Indian_Street_Dog.jpg',
+      u1, an.Kaalu, 'feed',
+      'Fed Kaalu, a brown-and-white Indian street dog waiting by the Sector 62 roadside, with fresh water and rice tonight.',
+      PHOTOS.kaalu,
       28.6311, 77.3709, 'resolved',
-      'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/An_Indian_Street_Dog.jpg/960px-An_Indian_Street_Dog.jpg',
+      PHOTOS.kaalu,
       u1, 'deed', 100, 1, 0.96, 'AI confirmed Dog & feed deed against original post photo', 100
     ],
     [
-      u2, null, 'adoption',
-      'Friendly street cat Mithu hanging around Shipra Mall parking gate. Looking for a safe home!',
-      'https://thumb.wikimedia.org/wikipedia/commons/thumb/7/76/Stray_cat_standing_in_the_street.JPG/960px-Stray_cat_standing_in_the_street.JPG',
+      u1, an.Sheru, 'feed',
+      'Brown Indian Pariah dog Sheru standing alert on the dirt lane near JIIT Gate 1. Needs clean water bowl and dry kibble.',
+      PHOTOS.sheru,
+      28.6304, 77.3721, 'open', null, null,
+      'request', 40, 0, null, null, 0
+    ],
+    [
+      u2, an.Gauri, 'rescue',
+      'White street cow Gauri standing in the narrow market lane near Fortis crossing with a minor horn scrape. Seeking local vet check.',
+      PHOTOS.gauri,
+      28.6248, 77.3788, 'open', null, null,
+      'request', 70, 0, null, null, 0
+    ],
+    [
+      u2, an.Mithu, 'adoption',
+      'Tabby stray cat Mithu standing on the asphalt street near Shipra Mall gate. Calm and looking for a safe home!',
+      PHOTOS.mithu,
       28.6264, 77.3762, 'open', null, null,
       'request', 45, 0, null, null, 0
     ],
     [
-      u3, null, 'feed',
-      'Spotted an Indian pariah dog resting near Noida Electronic City metro footpath in the afternoon sun.',
-      'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Indian_pariah_dog_sleeping.jpg/960px-Indian_pariah_dog_sleeping.jpg',
+      u2, an.Whiskers, 'feed',
+      'Fed street cat Whiskers resting outdoors behind the college canteen with warm milk and kibble.',
+      PHOTOS.kaluwaCat,
+      28.6291, 77.3698, 'resolved',
+      PHOTOS.kaluwaCat,
+      u2, 'deed', 100, 1, 0.95, 'AI confirmed Cat & feed deed against original post photo', 100
+    ],
+    [
+      u3, an.Chhotu, 'feed',
+      'Tan Indian Pariah dog Chhotu curled up sleeping peacefully on the sandy ground near Noida Electronic City metro.',
+      PHOTOS.chhotu,
       28.6342, 77.3691, 'open', null, null,
       'photo', 25, 0, null, null, 0
     ],
     [
-      u1, null, 'rescue',
-      'Stray cow Nandi near Fortis crossing has a minor horn scrape. Seeking local gau-raksha vet contact.',
-      'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5c/Cow_in_Varanasi_street_%288527193622%29.jpg/960px-Cow_in_Varanasi_street_%288527193622%29.jpg',
-      28.6248, 77.3788, 'open', null, null,
-      'request', 70, 0, null, null, 0
+      u3, an.Nandi, 'shelter',
+      'Stray cows hanging out right in the middle of the Sector 63 road — need reflective collars and safe guiding off traffic.',
+      PHOTOS.herd,
+      28.6335, 77.3750, 'open', null, null,
+      'request', 60, 0, null, null, 0
+    ],
+    [
+      u3, an.Motu, 'vaccine',
+      'Indian Pariah dog Motu spotted inside the Sector 62 residential complex lane. Scheduled for annual anti-rabies vaccination.',
+      PHOTOS.motu,
+      28.6280, 77.3710, 'open', null, null,
+      'request', 55, 0, null, null, 0
     ]
   ];
   await getPool().query(
@@ -631,54 +587,57 @@ async function ensureRealisticStreetSeed() {
        status, resolved_photo_url, resolved_by, post_kind, post_paw_points,
        ai_verified, ai_verification_score, ai_verification_note, resolved_paw_points
      ) VALUES ?`,
-    [streetListings]
+    [listings]
   );
 
+  const listingRows = await db.query('SELECT listing_id FROM Listings ORDER BY listing_id ASC');
+  const l = listingRows.map(r => r.listing_id);
+
+  const comments = [
+    [l[1], u2, 'I can bring a bowl of rice and boiled eggs at 2 PM after class!'],
+    [l[1], u1, 'Awesome Kunal! He usually rests under the neem tree near Gate 1.'],
+    [l[2], u3, 'Called the local gaushala vet team; they can check on her this evening.'],
+    [l[6], u1, 'We have two reflective collars left from last weekend drive!']
+  ];
+  await getPool().query('INSERT INTO Comments (listing_id, user_id, text) VALUES ?', [comments]);
+
+  const deeds = [
+    [u1, l[0], 'resolve_listing', 100],
+    [u1, l[1], 'create_listing', 40],
+    [u1, null, 'capture_animal', 30],
+    [u1, null, 'capture_animal', 30],
+    [u1, null, 'capture_animal', 30],
+    [u1, l[1], 'post_comment', 10],
+    [u1, l[6], 'post_comment', 10],
+    [u2, l[2], 'create_listing', 70],
+    [u2, l[3], 'create_listing', 45],
+    [u2, l[4], 'resolve_listing', 100],
+    [u2, null, 'capture_animal', 30],
+    [u2, null, 'capture_animal', 30],
+    [u2, l[1], 'post_comment', 10],
+    [u3, l[5], 'photo_sighting', 25],
+    [u3, l[6], 'create_listing', 60],
+    [u3, l[7], 'create_listing', 55],
+    [u3, null, 'capture_animal', 30],
+    [u3, null, 'capture_animal', 30],
+    [u3, l[2], 'post_comment', 10]
+  ];
   await getPool().query(
     'INSERT INTO Deeds (user_id, listing_id, action_type, points_awarded) VALUES ?',
-    [[
-      [u1, null, 'resolve_listing', 100],
-      [u2, null, 'create_listing', 45],
-      [u3, null, 'photo_sighting', 25],
-      [u1, null, 'create_listing', 70]
-    ]]
+    [deeds]
   );
+
+  const b = badgeRows.map(r => r.badge_id);
+  const userBadges = [
+    [u1, b[0]], [u1, b[1]], [u1, b[3]], [u1, b[4]], [u1, b[6]],
+    [u2, b[0]], [u2, b[3]], [u2, b[4]],
+    [u3, b[0]], [u3, b[3]]
+  ].filter(([, bid]) => Boolean(bid));
+  if (userBadges.length > 0) {
+    await getPool().query('INSERT IGNORE INTO UserBadges (user_id, badge_id) VALUES ?', [userBadges]);
+  }
 
   await syncUnifiedPoints();
-}
-
-async function ensureRealStreetPhotos() {
-  const studioCheck = await db.get(
-    "SELECT listing_id FROM Listings WHERE photo_url LIKE '%photo-1561037404%' OR photo_url LIKE '%photo-1546445317%' OR photo_url LIKE '%photo-1573865526739%' LIMIT 1"
-  );
-  if (!studioCheck) return;
-
-  const replacements = [
-    [
-      'https://images.unsplash.com/photo-1561037404-61cd46aa615b?w=800&auto=format&fit=crop',
-      'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/An_Indian_Street_Dog.jpg/960px-An_Indian_Street_Dog.jpg'
-    ],
-    [
-      'https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=800&auto=format&fit=crop',
-      'https://thumb.wikimedia.org/wikipedia/commons/thumb/7/76/Stray_cat_standing_in_the_street.JPG/960px-Stray_cat_standing_in_the_street.JPG'
-    ],
-    [
-      'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&auto=format&fit=crop',
-      'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Indian_pariah_dog_sleeping.jpg/960px-Indian_pariah_dog_sleeping.jpg'
-    ],
-    [
-      'https://images.unsplash.com/photo-1546445317-29f4545e9d53?w=800&auto=format&fit=crop',
-      'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5c/Cow_in_Varanasi_street_%288527193622%29.jpg/960px-Cow_in_Varanasi_street_%288527193622%29.jpg'
-    ]
-  ];
-
-  await Promise.all(
-    replacements.flatMap(([oldUrl, newUrl]) => [
-      db.run('UPDATE Listings SET photo_url = ? WHERE photo_url = ?', [newUrl, oldUrl]),
-      db.run('UPDATE Listings SET resolved_photo_url = ? WHERE resolved_photo_url = ?', [newUrl, oldUrl]),
-      db.run('UPDATE Animals SET photo_url = ? WHERE photo_url = ?', [newUrl, oldUrl])
-    ])
-  );
 }
 
 export default db;
