@@ -141,140 +141,149 @@ export async function initDatabase() {
     await bootstrapConn.end();
   }
 
-  await db.run(`
-    CREATE TABLE IF NOT EXISTS Users (
-      user_id INT AUTO_INCREMENT PRIMARY KEY,
-      name VARCHAR(150) NOT NULL,
-      email VARCHAR(255) UNIQUE NOT NULL,
-      password_hash VARCHAR(255) NOT NULL,
-      location VARCHAR(255) DEFAULT 'Sector 62, Noida',
-      points_total INT DEFAULT 0,
-      paw_points INT DEFAULT 0,
-      avatar_url MEDIUMTEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-  `);
+  // Wave 1: independent tables in parallel
+  await Promise.all([
+    db.run(`
+      CREATE TABLE IF NOT EXISTS Users (
+        user_id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(150) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password_hash VARCHAR(255) NOT NULL,
+        location VARCHAR(255) DEFAULT 'Sector 62, Noida',
+        points_total INT DEFAULT 0,
+        paw_points INT DEFAULT 0,
+        avatar_url MEDIUMTEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `),
+    db.run(`
+      CREATE TABLE IF NOT EXISTS Species (
+        species_id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(150) UNIQUE NOT NULL,
+        category VARCHAR(100) NOT NULL,
+        icon VARCHAR(64) NOT NULL,
+        silhouette_icon VARCHAR(64),
+        description TEXT
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `),
+    db.run(`
+      CREATE TABLE IF NOT EXISTS Badges (
+        badge_id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(150) NOT NULL,
+        criteria TEXT NOT NULL,
+        icon VARCHAR(64) NOT NULL,
+        points_required INT DEFAULT 0,
+        badge_type VARCHAR(64) NOT NULL
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `)
+  ]);
 
-  await db.run(`
-    CREATE TABLE IF NOT EXISTS Species (
-      species_id INT AUTO_INCREMENT PRIMARY KEY,
-      name VARCHAR(150) UNIQUE NOT NULL,
-      category VARCHAR(100) NOT NULL,
-      icon VARCHAR(64) NOT NULL,
-      silhouette_icon VARCHAR(64),
-      description TEXT
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-  `);
+  // Wave 2: Animals & UserBadges
+  await Promise.all([
+    db.run(`
+      CREATE TABLE IF NOT EXISTS Animals (
+        animal_id INT AUTO_INCREMENT PRIMARY KEY,
+        species_id INT NOT NULL,
+        nickname VARCHAR(150) NOT NULL,
+        photo_url MEDIUMTEXT NOT NULL,
+        latitude DOUBLE NOT NULL,
+        longitude DOUBLE NOT NULL,
+        first_captured_by INT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (species_id) REFERENCES Species(species_id) ON DELETE CASCADE,
+        FOREIGN KEY (first_captured_by) REFERENCES Users(user_id) ON DELETE SET NULL
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `),
+    db.run(`
+      CREATE TABLE IF NOT EXISTS UserBadges (
+        user_badge_id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        badge_id INT NOT NULL,
+        earned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+        FOREIGN KEY (badge_id) REFERENCES Badges(badge_id) ON DELETE CASCADE,
+        UNIQUE KEY uniq_user_badge (user_id, badge_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `)
+  ]);
 
-  await db.run(`
-    CREATE TABLE IF NOT EXISTS Animals (
-      animal_id INT AUTO_INCREMENT PRIMARY KEY,
-      species_id INT NOT NULL,
-      nickname VARCHAR(150) NOT NULL,
-      photo_url MEDIUMTEXT NOT NULL,
-      latitude DOUBLE NOT NULL,
-      longitude DOUBLE NOT NULL,
-      first_captured_by INT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (species_id) REFERENCES Species(species_id) ON DELETE CASCADE,
-      FOREIGN KEY (first_captured_by) REFERENCES Users(user_id) ON DELETE SET NULL
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-  `);
+  // Wave 3: Captures & Listings
+  await Promise.all([
+    db.run(`
+      CREATE TABLE IF NOT EXISTS Captures (
+        capture_id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        animal_id INT NOT NULL,
+        photo_url MEDIUMTEXT NOT NULL,
+        predicted_species VARCHAR(150),
+        confidence DOUBLE DEFAULT 0.95,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+        FOREIGN KEY (animal_id) REFERENCES Animals(animal_id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `),
+    db.run(`
+      CREATE TABLE IF NOT EXISTS Listings (
+        listing_id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        animal_id INT NULL,
+        help_type ENUM('shelter', 'feed', 'clothes', 'vaccine', 'rescue', 'adoption') NOT NULL,
+        description TEXT NOT NULL,
+        photo_url MEDIUMTEXT NOT NULL,
+        latitude DOUBLE NOT NULL,
+        longitude DOUBLE NOT NULL,
+        status ENUM('open', 'resolved') DEFAULT 'open',
+        resolved_photo_url MEDIUMTEXT,
+        resolved_by INT NULL,
+        post_kind VARCHAR(32) DEFAULT 'request',
+        post_paw_points INT DEFAULT 0,
+        ai_verified TINYINT(1) DEFAULT 0,
+        ai_verification_score DOUBLE,
+        ai_verification_note TEXT,
+        resolved_paw_points INT DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+        FOREIGN KEY (animal_id) REFERENCES Animals(animal_id) ON DELETE SET NULL,
+        FOREIGN KEY (resolved_by) REFERENCES Users(user_id) ON DELETE SET NULL
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `)
+  ]);
 
-  await db.run(`
-    CREATE TABLE IF NOT EXISTS Captures (
-      capture_id INT AUTO_INCREMENT PRIMARY KEY,
-      user_id INT NOT NULL,
-      animal_id INT NOT NULL,
-      photo_url MEDIUMTEXT NOT NULL,
-      predicted_species VARCHAR(150),
-      confidence DOUBLE DEFAULT 0.95,
-      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
-      FOREIGN KEY (animal_id) REFERENCES Animals(animal_id) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-  `);
+  // Wave 4: Deeds & Comments
+  await Promise.all([
+    db.run(`
+      CREATE TABLE IF NOT EXISTS Deeds (
+        deed_id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        listing_id INT NULL,
+        action_type VARCHAR(100) NOT NULL,
+        points_awarded INT NOT NULL,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+        FOREIGN KEY (listing_id) REFERENCES Listings(listing_id) ON DELETE SET NULL
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `),
+    db.run(`
+      CREATE TABLE IF NOT EXISTS Comments (
+        comment_id INT AUTO_INCREMENT PRIMARY KEY,
+        listing_id INT NOT NULL,
+        user_id INT NOT NULL,
+        text TEXT NOT NULL,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (listing_id) REFERENCES Listings(listing_id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `)
+  ]);
 
-  await db.run(`
-    CREATE TABLE IF NOT EXISTS Listings (
-      listing_id INT AUTO_INCREMENT PRIMARY KEY,
-      user_id INT NOT NULL,
-      animal_id INT NULL,
-      help_type ENUM('shelter', 'feed', 'clothes', 'vaccine', 'rescue', 'adoption') NOT NULL,
-      description TEXT NOT NULL,
-      photo_url MEDIUMTEXT NOT NULL,
-      latitude DOUBLE NOT NULL,
-      longitude DOUBLE NOT NULL,
-      status ENUM('open', 'resolved') DEFAULT 'open',
-      resolved_photo_url MEDIUMTEXT,
-      resolved_by INT NULL,
-      post_kind VARCHAR(32) DEFAULT 'request',
-      post_paw_points INT DEFAULT 0,
-      ai_verified TINYINT(1) DEFAULT 0,
-      ai_verification_score DOUBLE,
-      ai_verification_note TEXT,
-      resolved_paw_points INT DEFAULT 0,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
-      FOREIGN KEY (animal_id) REFERENCES Animals(animal_id) ON DELETE SET NULL,
-      FOREIGN KEY (resolved_by) REFERENCES Users(user_id) ON DELETE SET NULL
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-  `);
-
-  await db.run(`
-    CREATE TABLE IF NOT EXISTS Deeds (
-      deed_id INT AUTO_INCREMENT PRIMARY KEY,
-      user_id INT NOT NULL,
-      listing_id INT NULL,
-      action_type VARCHAR(100) NOT NULL,
-      points_awarded INT NOT NULL,
-      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
-      FOREIGN KEY (listing_id) REFERENCES Listings(listing_id) ON DELETE SET NULL
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-  `);
-
-  await db.run(`
-    CREATE TABLE IF NOT EXISTS Comments (
-      comment_id INT AUTO_INCREMENT PRIMARY KEY,
-      listing_id INT NOT NULL,
-      user_id INT NOT NULL,
-      text TEXT NOT NULL,
-      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (listing_id) REFERENCES Listings(listing_id) ON DELETE CASCADE,
-      FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-  `);
-
-  await db.run(`
-    CREATE TABLE IF NOT EXISTS Badges (
-      badge_id INT AUTO_INCREMENT PRIMARY KEY,
-      name VARCHAR(150) NOT NULL,
-      criteria TEXT NOT NULL,
-      icon VARCHAR(64) NOT NULL,
-      points_required INT DEFAULT 0,
-      badge_type VARCHAR(64) NOT NULL
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-  `);
-
-  await db.run(`
-    CREATE TABLE IF NOT EXISTS UserBadges (
-      user_badge_id INT AUTO_INCREMENT PRIMARY KEY,
-      user_id INT NOT NULL,
-      badge_id INT NOT NULL,
-      earned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
-      FOREIGN KEY (badge_id) REFERENCES Badges(badge_id) ON DELETE CASCADE,
-      UNIQUE KEY uniq_user_badge (user_id, badge_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-  `);
-
-  await ensureListingDeedColumns();
   await ensureSpeciesCatalog();
-  await seedData();
-  await ensureCoreTeamAccounts();
-  await ensurePixelUserAvatars();
-  await syncUnifiedPoints();
+  const seededNow = await seedData();
+  if (!seededNow && !process.env.VERCEL) {
+    await ensureListingDeedColumns();
+    await ensureCoreTeamAccounts();
+    await ensurePixelUserAvatars();
+    await syncUnifiedPoints();
+  }
 }
 
 async function ensurePixelUserAvatars() {
@@ -368,24 +377,18 @@ async function ensureListingDeedColumns() {
 }
 
 async function ensureSpeciesCatalog() {
-  await db.transaction(async (tx) => {
-    for (const s of SPECIES_CATALOG) {
-      await tx.run(
-        `INSERT IGNORE INTO Species (name, category, icon, silhouette_icon, description)
-         VALUES (?, ?, ?, ?, ?)`,
-        s
-      );
-      await tx.run(
-        `UPDATE Species SET category = ? WHERE name = ? AND category != ?`,
-        [s[1], s[0], s[1]]
-      );
-    }
-  });
+  const existing = await db.get('SELECT COUNT(*) as count FROM Species');
+  if (existing && existing.count >= SPECIES_CATALOG.length) return;
+
+  await getPool().query(
+    `INSERT IGNORE INTO Species (name, category, icon, silhouette_icon, description) VALUES ?`,
+    [SPECIES_CATALOG]
+  );
 }
 
 async function seedData() {
   const countRow = await db.get('SELECT COUNT(*) as count FROM Users');
-  if (countRow && countRow.count > 0) return;
+  if (countRow && countRow.count > 0) return false;
 
   console.log('🌱 Seeding initial Pawsitive MySQL database...');
 
@@ -398,12 +401,10 @@ async function seedData() {
     ['Chatty Helper', 'Post 3 helpful coordination comments', '💬', 30, 'comment'],
     ['Top Rescuer', 'Achieve 200+ total deed points', '⭐', 200, 'points']
   ];
-  for (const b of badges) {
-    await db.run(
-      'INSERT INTO Badges (name, criteria, icon, points_required, badge_type) VALUES (?, ?, ?, ?, ?)',
-      b
-    );
-  }
+  await getPool().query(
+    'INSERT INTO Badges (name, criteria, icon, points_required, badge_type) VALUES ?',
+    [badges]
+  );
 
   const salt = bcrypt.genSaltSync(10);
   const hashPass = bcrypt.hashSync('pawsitive123', salt);
@@ -412,12 +413,10 @@ async function seedData() {
     ['Kunal Malik', 'kunal@pawsitive.app', hashPass, 'Indirapuram, Ghaziabad', 290, TRAINER_SPRITE_PRESETS[2].url],
     ['Ripunjay Saini', 'ripunjay@pawsitive.app', hashPass, 'Sector 63, Noida', 240, TRAINER_SPRITE_PRESETS[3].url]
   ];
-  for (const u of users) {
-    await db.run(
-      'INSERT INTO Users (name, email, password_hash, location, points_total, avatar_url) VALUES (?, ?, ?, ?, ?, ?)',
-      u
-    );
-  }
+  await getPool().query(
+    'INSERT INTO Users (name, email, password_hash, location, points_total, avatar_url) VALUES ?',
+    [users]
+  );
 
   const animals = [
     [1, 'Sheru', 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600', 28.6304, 77.3721, 1],
@@ -427,12 +426,10 @@ async function seedData() {
     [5, 'Pip', 'https://images.unsplash.com/photo-1552728089-57bdde30beb3?w=600', 28.6318, 77.3734, 3],
     [6, 'Cheeku', 'https://images.unsplash.com/photo-1540573133985-87b6da6d54a9?w=600', 28.6350, 77.3680, 2]
   ];
-  for (const a of animals) {
-    await db.run(
-      'INSERT INTO Animals (species_id, nickname, photo_url, latitude, longitude, first_captured_by) VALUES (?, ?, ?, ?, ?, ?)',
-      a
-    );
-  }
+  await getPool().query(
+    'INSERT INTO Animals (species_id, nickname, photo_url, latitude, longitude, first_captured_by) VALUES ?',
+    [animals]
+  );
 
   const captures = [
     [1, 1, 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600', 'Dog', 0.98],
@@ -442,12 +439,10 @@ async function seedData() {
     [3, 5, 'https://images.unsplash.com/photo-1552728089-57bdde30beb3?w=600', 'Bird', 0.92],
     [2, 6, 'https://images.unsplash.com/photo-1540573133985-87b6da6d54a9?w=600', 'Monkey', 0.95]
   ];
-  for (const c of captures) {
-    await db.run(
-      'INSERT INTO Captures (user_id, animal_id, photo_url, predicted_species, confidence) VALUES (?, ?, ?, ?, ?)',
-      c
-    );
-  }
+  await getPool().query(
+    'INSERT INTO Captures (user_id, animal_id, photo_url, predicted_species, confidence) VALUES ?',
+    [captures]
+  );
 
   const listings = [
     [
@@ -489,13 +484,11 @@ async function seedData() {
       1
     ]
   ];
-  for (const l of listings) {
-    await db.run(
-      `INSERT INTO Listings (user_id, animal_id, help_type, description, photo_url, latitude, longitude, status, resolved_photo_url, resolved_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      l
-    );
-  }
+  await getPool().query(
+    `INSERT INTO Listings (user_id, animal_id, help_type, description, photo_url, latitude, longitude, status, resolved_photo_url, resolved_by)
+     VALUES ?`,
+    [listings]
+  );
 
   const comments = [
     [1, 2, 'I can bring a bowl of rice and boiled eggs at 2 PM after class!'],
@@ -504,9 +497,7 @@ async function seedData() {
     [2, 3, 'Called the local gaushala team; they dispatched a volunteer van.'],
     [4, 1, 'I have two old sweaters we can turn into cozy puppy blankets.']
   ];
-  for (const cm of comments) {
-    await db.run('INSERT INTO Comments (listing_id, user_id, text) VALUES (?, ?, ?)', cm);
-  }
+  await getPool().query('INSERT INTO Comments (listing_id, user_id, text) VALUES ?', [comments]);
 
   const deeds = [
     [1, 1, 'create_listing', 50],
@@ -528,24 +519,21 @@ async function seedData() {
     [3, 1, 'post_comment', 10],
     [3, 2, 'post_comment', 10]
   ];
-  for (const d of deeds) {
-    await db.run(
-      'INSERT INTO Deeds (user_id, listing_id, action_type, points_awarded) VALUES (?, ?, ?, ?)',
-      d
-    );
-  }
+  await getPool().query(
+    'INSERT INTO Deeds (user_id, listing_id, action_type, points_awarded) VALUES ?',
+    [deeds]
+  );
 
   const userBadges = [
     [1, 1], [1, 2], [1, 4], [1, 5], [1, 7],
     [2, 1], [2, 4],
     [3, 1], [3, 4]
   ];
-  for (const ub of userBadges) {
-    await db.run('INSERT INTO UserBadges (user_id, badge_id) VALUES (?, ?)', ub);
-  }
+  await getPool().query('INSERT INTO UserBadges (user_id, badge_id) VALUES ?', [userBadges]);
 
   await syncUnifiedPoints();
   console.log('✅ Pawsitive MySQL database initialized & seeded successfully.');
+  return true;
 }
 
 export default db;

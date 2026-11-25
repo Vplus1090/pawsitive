@@ -38,6 +38,7 @@ export const api = {
   },
 
   async getMe() {
+    if (!localStorage.getItem('pawsitive_token')) return null;
     const res = await fetch(`${API_BASE}/auth/me`, {
       headers: getHeaders()
     });
