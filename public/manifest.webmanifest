@@ -1,0 +1,25 @@
+{
+  "name": "Pawsitive - 8-Bit Animal Pokédex & Welfare",
+  "short_name": "Pawsitive",
+  "description": "8-bit community animal welfare, street rescue feed, and Pokédex.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#e3f4ae",
+  "background_color": "#e3f4ae",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

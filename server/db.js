@@ -278,6 +278,7 @@ export async function initDatabase() {
 
   await ensureSpeciesCatalog();
   const seededNow = await seedData();
+  await ensureRealisticStreetSeed();
   if (!seededNow && !process.env.VERCEL) {
     await ensureListingDeedColumns();
     await ensureCoreTeamAccounts();
@@ -534,6 +535,74 @@ async function seedData() {
   await syncUnifiedPoints();
   console.log('✅ Pawsitive MySQL database initialized & seeded successfully.');
   return true;
+}
+
+async function ensureRealisticStreetSeed() {
+  const countRow = await db.get('SELECT COUNT(*) as count FROM Listings');
+  if (countRow && countRow.count >= 10) return;
+
+  const streetAnimals = [
+    [1, 'Kaalu', 'https://images.unsplash.com/photo-1561037404-61cd46aa615b?w=800&auto=format&fit=crop', 28.6311, 77.3709, 1],
+    [2, 'Mithu', 'https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=800&auto=format&fit=crop', 28.6264, 77.3762, 2],
+    [1, 'Chhotu', 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&auto=format&fit=crop', 28.6342, 77.3691, 3],
+    [3, 'Nandi', 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?w=800&auto=format&fit=crop', 28.6248, 77.3788, 1]
+  ];
+  await getPool().query(
+    'INSERT INTO Animals (species_id, nickname, photo_url, latitude, longitude, first_captured_by) VALUES ?',
+    [streetAnimals]
+  );
+
+  const streetListings = [
+    [
+      1, null, 'feed',
+      'Fed Kaalu and two street dogs near Sector 62 tea stall with clean water and curd rice tonight.',
+      'https://images.unsplash.com/photo-1561037404-61cd46aa615b?w=800&auto=format&fit=crop',
+      28.6311, 77.3709, 'resolved',
+      'https://images.unsplash.com/photo-1561037404-61cd46aa615b?w=800&auto=format&fit=crop',
+      1, 'deed', 100, 1, 0.96, 'AI confirmed Dog & feed deed against original post photo', 100
+    ],
+    [
+      2, null, 'adoption',
+      'Friendly ginger street cat Mithu hanging around Shipra Mall parking gate. Litter-trained, looking for a safe home!',
+      'https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=800&auto=format&fit=crop',
+      28.6264, 77.3762, 'open', null, null,
+      'request', 45, 0, null, null, 0
+    ],
+    [
+      3, null, 'feed',
+      'Spotted two street dogs resting near Noida Electronic City metro footpath in the afternoon sun.',
+      'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&auto=format&fit=crop',
+      28.6342, 77.3691, 'open', null, null,
+      'photo', 25, 0, null, null, 0
+    ],
+    [
+      1, null, 'rescue',
+      'Stray cow Nandi near Fortis crossing has a minor horn scrape. Seeking local gau-raksha vet contact.',
+      'https://images.unsplash.com/photo-1546445317-29f4545e9d53?w=800&auto=format&fit=crop',
+      28.6248, 77.3788, 'open', null, null,
+      'request', 70, 0, null, null, 0
+    ]
+  ];
+  await getPool().query(
+    `INSERT INTO Listings (
+       user_id, animal_id, help_type, description, photo_url, latitude, longitude,
+       status, resolved_photo_url, resolved_by, post_kind, post_paw_points,
+       ai_verified, ai_verification_score, ai_verification_note, resolved_paw_points
+     ) VALUES ?`,
+    [streetListings]
+  );
+
+  await getPool().query(
+    'INSERT INTO Deeds (user_id, listing_id, action_type, points_awarded) VALUES ?',
+    [[
+      [1, null, 'resolve_listing', 100],
+      [2, null, 'create_listing', 45],
+      [3, null, 'photo_sighting', 25],
+      [1, null, 'create_listing', 70]
+    ]]
+  );
+
+  await syncUnifiedPoints();
 }
 
 export default db;
