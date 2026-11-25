@@ -13,6 +13,15 @@ function getHeaders() {
 
 export const api = {
   // Auth
+  getCachedUser() {
+    try {
+      const raw = localStorage.getItem('pawsitive_user');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  },
+
   async login(email, password) {
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
@@ -22,6 +31,7 @@ export const api = {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Login failed');
     localStorage.setItem('pawsitive_token', data.token);
+    if (data.user) localStorage.setItem('pawsitive_user', JSON.stringify(data.user));
     return data;
   },
 
@@ -34,6 +44,7 @@ export const api = {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Registration failed');
     localStorage.setItem('pawsitive_token', data.token);
+    if (data.user) localStorage.setItem('pawsitive_user', JSON.stringify(data.user));
     return data;
   },
 
@@ -42,8 +53,13 @@ export const api = {
     const res = await fetch(`${API_BASE}/auth/me`, {
       headers: getHeaders()
     });
+    if (res.status === 401 || res.status === 403 || res.status === 404) {
+      return { unauthorized: true };
+    }
     if (!res.ok) return null;
-    return await res.json();
+    const data = await res.json();
+    if (data?.user) localStorage.setItem('pawsitive_user', JSON.stringify(data.user));
+    return data;
   },
 
   async getDemoUsers() {
@@ -63,6 +79,7 @@ export const api = {
 
   logout() {
     localStorage.removeItem('pawsitive_token');
+    localStorage.removeItem('pawsitive_user');
   },
 
   // Listings

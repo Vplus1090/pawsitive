@@ -11,7 +11,7 @@ export function signToken(user) {
       avatar_url: user.avatar_url
     },
     JWT_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: '30d' }
   );
 }
 

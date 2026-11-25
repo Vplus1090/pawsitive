@@ -8,8 +8,9 @@ import { fx } from '../utils/retroFeedback';
 export default function LoginPage({ onSuccess }) {
   const [mode, setMode] = useState('login'); // 'login' | 'register'
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(() => localStorage.getItem('pawsitive_saved_email') || '');
   const [password, setPassword] = useState('');
+  const [rememberLogin, setRememberLogin] = useState(true);
   const [location, setLocation] = useState('Sector 62, Noida');
   const [avatarUrl, setAvatarUrl] = useState(TRAINER_SPRITE_PRESETS[0].url);
   const [showPassword, setShowPassword] = useState(false);
@@ -62,6 +63,12 @@ export default function LoginPage({ onSuccess }) {
       const data = mode === 'login'
         ? await api.login(email.trim(), password)
         : await api.register(name.trim(), email.trim(), password, location.trim(), avatarUrl);
+
+      if (rememberLogin) {
+        localStorage.setItem('pawsitive_saved_email', email.trim());
+      } else {
+        localStorage.removeItem('pawsitive_saved_email');
+      }
 
       fx.success();
       if (onSuccess) onSuccess(data.user);
@@ -222,6 +229,16 @@ export default function LoginPage({ onSuccess }) {
                       />
                     </div>
                   )}
+
+                  <label className="flex items-center gap-2 text-[9px] text-[#142211] cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={rememberLogin}
+                      onChange={(e) => { fx.tap(); setRememberLogin(e.target.checked); }}
+                      className="w-3.5 h-3.5 accent-[#142211] cursor-pointer"
+                    />
+                    <span>Remember login</span>
+                  </label>
 
                   <button
                     type="submit"

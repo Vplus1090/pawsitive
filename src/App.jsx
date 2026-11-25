@@ -120,17 +120,26 @@ export default function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Initialize auth session (no auto-login: unregistered users stay locked on LoginPage)
+  // Initialize auth session (remember logged-in users across reloads/PWA restarts)
   useEffect(() => {
     const initApp = async () => {
+      const cached = api.getCachedUser();
+      const hasToken = Boolean(localStorage.getItem('pawsitive_token'));
+      if (hasToken && cached) {
+        setCurrentUser(cached);
+        setAuthChecked(true);
+      }
+
       try {
         const me = await api.getMe();
-        if (me?.user) {
+        if (me?.unauthorized) {
+          api.logout();
+          setCurrentUser(null);
+        } else if (me?.user) {
           setCurrentUser(me.user);
           const sp = await api.getSpecies();
           if (Array.isArray(sp)) setSpeciesList(sp);
-        } else {
-          api.logout();
+        } else if (!hasToken) {
           setCurrentUser(null);
         }
       } catch (err) {
