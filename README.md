@@ -13,7 +13,7 @@ Created based on the **Jaypee Institute of Information Technology (JIIT, Sector 
 2. Kunal Malik (2501200046)
 3. Ripunjay Saini (2501200058)
 
-**Submitted To:** Ms. Kirti Jain
+**Submitted To:** Dr. Kirti Jain & Ms. Aarti Goel
 
 ---
 
