@@ -1,4 +1,4 @@
-# 🐾 PAWSITIVE — Gamified Community Animal Welfare & Pokédex Mobile App
+# PAWSITIVE — Gamified Community Animal Welfare & Pokédex Mobile App
 
 [![npm version](https://img.shields.io/badge/npm-v1.0.0-cb3837.svg)](https://www.npmjs.com/)
 [![Node.js](https://img.shields.io/badge/Node.js-v25-green.svg)](https://nodejs.org/)
@@ -17,7 +17,7 @@ Created based on the **Jaypee Institute of Information Technology (JIIT, Sector 
 
 ---
 
-## ⚡ Quick Start via NPM
+## Quick Start via NPM
 
 Run the app immediately using standard npm commands:
 
@@ -41,7 +41,7 @@ npm test
 
 ---
 
-## 📦 NPM Scripts & CLI Reference
+## NPM Scripts & CLI Reference
 
 | Command | Action |
 |---|---|
@@ -53,7 +53,7 @@ npm test
 
 ---
 
-## 📱 Mobile-First "Phone Ports" Features
+## Mobile-First "Phone Ports" Features
 
 1. **Responsive Mobile Viewport**: Designed specifically for smartphone screens (iPhone & Android aspect ratios, 375px–430px safe areas, thumb-reachable touch targets).
 2. **Bottom Navigation Bar**: Fixed bottom navigation bar with quick tabs (Feed, Pokédex, Quick Capture `+`, Leaderboard, Profile).
@@ -62,7 +62,7 @@ npm test
 
 ---
 
-## 🌟 Concept & Overview
+## Concept & Overview
 
 **Pawsitive** is a mobile-first web application that turns everyday animal welfare into a community-driven, gamified social experience:
 - **Helper/Community Feed**: Any user can post a listing describing an animal in need (photo, location, help type: shelter, feed, clothes, vaccine, rescue, adoption). Anyone nearby can coordinate through real-time comments and mark the listing resolved by submitting proof of care.
@@ -74,7 +74,7 @@ npm test
 
 ---
 
-## 🗄️ Relational Database Schema (3NF)
+## Relational Database Schema (3NF)
 
 Following the ER diagram from the project synopsis:
 
@@ -95,7 +95,7 @@ Following the ER diagram from the project synopsis:
 
 ---
 
-## 🧪 Testing the Features
+## Testing the Features
 
 1. **One-Click User Switching**: In the top bar or Profile tab, switch between **Vardaan Gahlot**, **Kunal Malik**, **Ripunjay Saini**, and other community helpers.
 2. **Explore the Feed**: Filter requests by *Feed*, *Shelter*, *Rescue*, *Clothes*, *Vaccine*, or switch to **Map View** to see live pins around Sector 62, Noida!
